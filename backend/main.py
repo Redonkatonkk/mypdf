@@ -5,13 +5,23 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
+from pathlib import Path
 
 from api import upload, forms
+
+
+def get_version() -> str:
+    """从 VERSION.txt 读取版本号"""
+    version_file = Path(__file__).parent.parent / "VERSION.txt"
+    if version_file.exists():
+        return version_file.read_text().strip()
+    return "0.0.0"
+
 
 app = FastAPI(
     title="PDF处理应用",
     description="支持PDF上传、编辑、表单处理的Web应用",
-    version="1.0.0"
+    version=get_version()
 )
 
 # CORS配置 - 允许所有来源（nginx 反向代理处理请求）

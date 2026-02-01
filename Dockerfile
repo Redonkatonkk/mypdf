@@ -31,6 +31,9 @@ RUN apt-get update && apt-get install -y \
 COPY backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy version file
+COPY VERSION.txt ./
+
 # Copy backend source
 COPY backend/ ./backend/
 
@@ -65,10 +68,14 @@ server {
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
 
-        # 上传超时设置
+        # 超时设置
         proxy_connect_timeout 300;
         proxy_send_timeout 300;
         proxy_read_timeout 300;
+
+        # 二进制文件传输优化（PDF等）
+        proxy_buffering off;
+        proxy_request_buffering off;
     }
 
     # Uploads static files
