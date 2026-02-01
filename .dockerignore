@@ -1,0 +1,32 @@
+# Git
+.git
+.gitignore
+
+# Node
+frontend/node_modules
+frontend/.vite
+frontend/dist
+
+# Python
+backend/__pycache__
+backend/**/__pycache__
+backend/*.pyc
+backend/.pytest_cache
+backend/uploads/*
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+*.DS_Store
+
+# Claude
+.claude
+
+# Misc
+*.log
+*.md

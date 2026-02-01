@@ -23,7 +23,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # 启动后端
 echo "启动后端服务..."
 cd "$SCRIPT_DIR/backend"
-python3 -m uvicorn main:app --reload --host 0.0.0.0 --port 8000 &
+python3 -m uvicorn main:app --reload --host 0.0.0.0 --port 7778 &
 BACKEND_PID=$!
 
 # 等待后端启动
@@ -38,8 +38,8 @@ FRONTEND_PID=$!
 echo ""
 echo "================================"
 echo "服务已启动："
-echo "  前端: http://localhost:5173"
-echo "  后端: http://localhost:8000"
+echo "  前端: http://localhost:7777"
+echo "  后端: http://localhost:7778"
 echo "================================"
 echo ""
 echo "按 Ctrl+C 停止所有服务"
