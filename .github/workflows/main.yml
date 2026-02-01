@@ -1,0 +1,36 @@
+name: Build and Push Docker Image
+
+# 触发条件：当推送到 main 分支时触发 (如果你的主分支叫 master，请把 main 改为 master)
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # 使用 GitHub 提供的最新 Ubuntu 服务器
+
+    steps:
+      # 1. 把你的代码下载到服务器上
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. 登录 Docker Hub (使用我们在第二步设置的账号密码)
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 3. 设置 Docker Buildx (这是 Docker 官方推荐的构建工具)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # 4. 构建镜像并推送到 Docker Hub
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          # 下面这行会自动打上 latest 标签
+          # 格式必须是：你的用户名/项目名:标签
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/mypdf:latest
