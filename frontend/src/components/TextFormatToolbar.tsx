@@ -76,10 +76,7 @@ export function TextFormatToolbar({
 
   return (
     <div
-      className="fixed z-50 bg-white rounded-lg shadow-lg border border-gray-200 p-2 flex items-center gap-2 left-1/2 -translate-x-1/2"
-      style={{
-        top: 130,
-      }}
+      className="bg-white rounded-lg shadow-md border border-gray-200 p-2 flex items-center gap-2"
       onMouseDown={(e) => e.stopPropagation()}
     >
       {/* 字体选择 */}

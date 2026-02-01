@@ -59,6 +59,20 @@ export interface FormField {
     width: number;
     height: number;
   };
+  options?: string[];      // 下拉选项
+  isReadonly?: boolean;
+  isRequired?: boolean;
+  maxLength?: number;
+  pageIndex?: number;      // 字段所在页面
+}
+
+// 表单填充结果
+export interface FillFormResult {
+  fileId: string;
+  pdfUrl: string;
+  message: string;
+  filledFields?: string[];
+  warnings?: string[];
 }
 
 // 表单字段响应

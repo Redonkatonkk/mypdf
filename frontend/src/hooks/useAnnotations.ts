@@ -62,6 +62,16 @@ export function useAnnotations() {
     set(newAnnotations);
   }, [annotations, set]);
 
+  // 批量更新多个标注
+  const updateAnnotations = useCallback((updates: Array<{ id: string; changes: Partial<Annotation> }>) => {
+    const updatesMap = new Map(updates.map(u => [u.id, u.changes]));
+    const newAnnotations = annotations.map(ann => {
+      const changes = updatesMap.get(ann.id);
+      return changes ? { ...ann, ...changes } : ann;
+    });
+    set(newAnnotations);
+  }, [annotations, set]);
+
   // 删除标注
   const removeAnnotation = useCallback((id: string) => {
     const newAnnotations = annotations.filter(ann => ann.id !== id);
@@ -82,6 +92,7 @@ export function useAnnotations() {
     annotations,
     addAnnotation,
     updateAnnotation,
+    updateAnnotations,
     removeAnnotation,
     getPageAnnotations,
     getAnnotationById,

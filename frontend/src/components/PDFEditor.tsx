@@ -3,7 +3,7 @@
  * 基于Fabric.js实现标注功能
  */
 import { useEffect, useRef, useCallback } from 'react';
-import { Canvas, IText, FabricObject, Control, Path, Point, PencilBrush, FabricImage } from 'fabric';
+import { Canvas, IText, FabricObject, Control, Path, Point, PencilBrush, FabricImage, ActiveSelection } from 'fabric';
 import type { TPointerEventInfo } from 'fabric';
 import type { Annotation, ToolType, AnnotationType, SelectedTextInfo, DrawingOptions } from '../types';
 
@@ -21,6 +21,7 @@ interface PDFEditorProps {
   currentPage: number;
   onAddAnnotation: (type: AnnotationType, x: number, y: number, page: number, pageWidth: number, pageHeight: number) => Annotation;
   onUpdateAnnotation: (id: string, updates: Partial<Annotation>) => void;
+  onUpdateAnnotations?: (updates: Array<{ id: string; changes: Partial<Annotation> }>) => void;
   onRemoveAnnotation: (id: string) => void;
   onToolChange?: (tool: ToolType) => void;
   onTextSelect?: (info: SelectedTextInfo | null) => void;
@@ -37,6 +38,7 @@ export function PDFEditor({
   currentPage,
   onAddAnnotation,
   onUpdateAnnotation,
+  onUpdateAnnotations,
   onRemoveAnnotation,
   onToolChange,
   onTextSelect,
@@ -51,6 +53,7 @@ export function PDFEditor({
   const currentPageRef = useRef(currentPage);
   const onAddAnnotationRef = useRef(onAddAnnotation);
   const onUpdateAnnotationRef = useRef(onUpdateAnnotation);
+  const onUpdateAnnotationsRef = useRef(onUpdateAnnotations);
   const onRemoveAnnotationRef = useRef(onRemoveAnnotation);
   const onToolChangeRef = useRef(onToolChange);
   const onTextSelectRef = useRef(onTextSelect);
@@ -64,6 +67,7 @@ export function PDFEditor({
     currentPageRef.current = currentPage;
     onAddAnnotationRef.current = onAddAnnotation;
     onUpdateAnnotationRef.current = onUpdateAnnotation;
+    onUpdateAnnotationsRef.current = onUpdateAnnotations;
     onRemoveAnnotationRef.current = onRemoveAnnotation;
     onToolChangeRef.current = onToolChange;
     onTextSelectRef.current = onTextSelect;
@@ -132,20 +136,57 @@ export function PDFEditor({
 
     // 处理对象移动
     const handleObjectModified = (e: { target?: FabricObject }) => {
-      const obj = e.target as AnnotatedFabricObject;
-      if (!obj || !obj.annotationId) return;
+      const target = e.target;
+      if (!target) return;
 
-      // 使用 getBoundingRect 获取真实的边界框位置
-      // 这确保 IText 和 Path 使用一致的坐标获取逻辑
       const currentScale = scaleRef.current;
-      const boundingRect = obj.getBoundingRect();
 
-      onUpdateAnnotationRef.current(obj.annotationId, {
-        x: boundingRect.left / currentScale,
-        y: boundingRect.top / currentScale,
-        width: boundingRect.width / currentScale,
-        height: boundingRect.height / currentScale,
-      });
+      // 检查是否是多选（ActiveSelection）
+      if (target instanceof ActiveSelection) {
+        // 获取多选组中的所有对象（复制数组）
+        const objects = [...target.getObjects()] as AnnotatedFabricObject[];
+
+        // 使用 setTimeout 延迟处理，避免干扰 Fabric.js 内部状态
+        setTimeout(() => {
+          // 收集位置更新
+          const updates: Array<{ id: string; changes: Partial<Annotation> }> = [];
+
+          objects.forEach((obj) => {
+            if (!obj.annotationId) return;
+
+            // 获取边界框
+            const boundingRect = obj.getBoundingRect();
+
+            updates.push({
+              id: obj.annotationId,
+              changes: {
+                x: boundingRect.left / currentScale,
+                y: boundingRect.top / currentScale,
+                width: boundingRect.width / currentScale,
+                height: boundingRect.height / currentScale,
+              },
+            });
+          });
+
+          // 使用批量更新函数一次性更新所有对象
+          if (onUpdateAnnotationsRef.current && updates.length > 0) {
+            onUpdateAnnotationsRef.current(updates);
+          }
+        }, 0);
+      } else {
+        // 单个对象 - 使用 getBoundingRect 获取位置
+        const obj = target as AnnotatedFabricObject;
+        if (!obj.annotationId) return;
+
+        const boundingRect = obj.getBoundingRect();
+
+        onUpdateAnnotationRef.current(obj.annotationId, {
+          x: boundingRect.left / currentScale,
+          y: boundingRect.top / currentScale,
+          width: boundingRect.width / currentScale,
+          height: boundingRect.height / currentScale,
+        });
+      }
     };
 
     // 处理文本编辑
@@ -437,8 +478,6 @@ export function PDFEditor({
         // 禁止缩放文本框，防止字体大小随缩放改变
         lockScalingX: true,
         lockScalingY: true,
-        // 隐藏缩放控制点，保持UI简洁
-        hasControls: false,
         hasBorders: true,
         borderColor: '#3b82f6',
       });
@@ -449,6 +488,19 @@ export function PDFEditor({
         'left',
         'top'
       );
+
+      // 隐藏默认缩放控制点，只保留自定义删除按钮
+      obj.setControlsVisibility({
+        tl: false,
+        tr: false,
+        bl: false,
+        br: false,
+        mt: false,
+        mb: false,
+        ml: false,
+        mr: false,
+        mtr: false,
+      });
     } else if (annotation.type === 'draw' && annotation.pathData) {
       // 绘制路径
       const strokeWidth = (annotation.strokeWidth || 2) * currentScale;
@@ -671,8 +723,34 @@ export function PDFEditor({
     const canvas = fabricRef.current;
     const pageAnnotations = annotations.filter(a => a.page === currentPage);
 
+    // 获取当前选中的对象 ID，跳过这些对象的位置更新
+    // 避免与 ActiveSelection 的移动操作冲突
+    const activeObject = canvas.getActiveObject();
+    const selectedIds = new Set<string>();
+
+    if (activeObject) {
+      if (activeObject instanceof ActiveSelection) {
+        activeObject.getObjects().forEach((obj) => {
+          const annotatedObj = obj as AnnotatedFabricObject;
+          if (annotatedObj.annotationId) {
+            selectedIds.add(annotatedObj.annotationId);
+          }
+        });
+      } else {
+        const annotatedObj = activeObject as AnnotatedFabricObject;
+        if (annotatedObj.annotationId) {
+          selectedIds.add(annotatedObj.annotationId);
+        }
+      }
+    }
+
     // 更新现有对象的位置和字体大小
     pageAnnotations.forEach(annotation => {
+      // 跳过当前选中的对象
+      if (selectedIds.has(annotation.id)) {
+        return;
+      }
+
       const obj = annotationMapRef.current.get(annotation.id);
       if (obj) {
         const scaledX = annotation.x * scale;
@@ -767,6 +845,7 @@ export function PDFEditor({
         width,
         height,
         pointerEvents: 'auto',
+        zIndex: 5,  // 低于 FormFieldOverlay (z-index: 10)
       }}
     >
       <canvas ref={canvasRef} />

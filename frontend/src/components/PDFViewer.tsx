@@ -8,6 +8,13 @@ import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 // 设置PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
+interface PageSizeInfo {
+  width: number;    // 原始宽度（scale=1）
+  height: number;   // 原始高度（scale=1）
+  scaledWidth: number;   // 缩放后宽度
+  scaledHeight: number;  // 缩放后高度
+}
+
 interface PDFViewerProps {
   url: string | null;
   page: number;
@@ -15,6 +22,7 @@ interface PDFViewerProps {
   onLoadSuccess?: (totalPages: number) => void;
   onLoadError?: (error: Error) => void;
   onPageRender?: (canvas: HTMLCanvasElement) => void;
+  onPageSizeChange?: (size: PageSizeInfo) => void;
 }
 
 export function PDFViewer({
@@ -24,6 +32,7 @@ export function PDFViewer({
   onLoadSuccess,
   onLoadError,
   onPageRender,
+  onPageSizeChange,
 }: PDFViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null);
@@ -35,11 +44,13 @@ export function PDFViewer({
   const onLoadSuccessRef = useRef(onLoadSuccess);
   const onLoadErrorRef = useRef(onLoadError);
   const onPageRenderRef = useRef(onPageRender);
+  const onPageSizeChangeRef = useRef(onPageSizeChange);
 
   useEffect(() => {
     onLoadSuccessRef.current = onLoadSuccess;
     onLoadErrorRef.current = onLoadError;
     onPageRenderRef.current = onPageRender;
+    onPageSizeChangeRef.current = onPageSizeChange;
   });
 
   // 加载PDF文档
@@ -106,6 +117,14 @@ export function PDFViewer({
       canvas.width = viewport.width;
       canvas.height = viewport.height;
       setPageSize({ width: viewport.width, height: viewport.height });
+
+      // 通知页面尺寸变化（包含原始尺寸和缩放后尺寸）
+      onPageSizeChangeRef.current?.({
+        width: viewport1.width,
+        height: viewport1.height,
+        scaledWidth: viewport.width,
+        scaledHeight: viewport.height,
+      });
 
       const renderContext = {
         canvasContext: context,
