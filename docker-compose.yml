@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  mypdf:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mypdf
+    ports:
+      - "7777:7777"
+      - "7778:7778"
+    volumes:
+      # 持久化上传的文件
+      - uploads_data:/app/backend/uploads
+    environment:
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7778/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  uploads_data:
+    driver: local
