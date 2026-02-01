@@ -79,6 +79,17 @@ export function InlineFormInput({
   // 复选框
   if (field.type === 'checkbox') {
     const checkboxSize = Math.min(position.width, position.height) * 0.8;
+    const isChecked = Boolean(value);
+
+    console.log('[Checkbox] Render:', field.id, 'value:', value, 'isChecked:', isChecked);
+
+    const handleToggle = () => {
+      console.log('[Checkbox] Toggle:', field.id, 'current:', isChecked, 'new:', !isChecked);
+      if (!disabled && !field.isReadonly) {
+        onChange(field.id, !isChecked);
+      }
+    };
+
     return (
       <div
         style={{
@@ -88,26 +99,37 @@ export function InlineFormInput({
           justifyContent: 'center',
           cursor: disabled || field.isReadonly ? 'not-allowed' : 'pointer',
         }}
-        onClick={(e) => {
-          // 只有点击容器（非 checkbox 本身）时才触发
-          if (e.target === e.currentTarget && !disabled && !field.isReadonly) {
-            onChange(field.id, !value);
-          }
-        }}
+        onClick={handleToggle}
       >
-        <input
-          type="checkbox"
-          checked={Boolean(value)}
-          onChange={handleCheckboxChange}
-          disabled={disabled || field.isReadonly}
+        {/* 使用自定义复选框样式避免原生 checkbox 的状态同步问题 */}
+        <div
           style={{
             width: `${checkboxSize}px`,
             height: `${checkboxSize}px`,
-            margin: 0,
-            cursor: 'inherit',
-            accentColor: '#3b82f6',
+            border: '2px solid #3b82f6',
+            borderRadius: '3px',
+            backgroundColor: isChecked ? '#3b82f6' : 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.15s ease',
           }}
-        />
+        >
+          {isChecked && (
+            <svg
+              width={checkboxSize * 0.7}
+              height={checkboxSize * 0.7}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="4 12 9 17 20 6" />
+            </svg>
+          )}
+        </div>
       </div>
     );
   }

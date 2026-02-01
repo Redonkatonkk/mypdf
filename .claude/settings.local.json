@@ -13,7 +13,14 @@
       "Bash(lsof:*)",
       "Bash(xargs kill -9)",
       "Bash(curl:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(python3:*)",
+      "Bash(/Users/jinruizhang/Desktop/coding/mypdf/start.sh)",
+      "Bash(tree:*)",
+      "Bash(echo:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }

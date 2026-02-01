@@ -27,6 +27,7 @@ export function FormFieldOverlay({
   onValueChange,
   disabled = false,
 }: FormFieldOverlayProps) {
+  console.log('[FormFieldOverlay] Render, values:', values);
   // 过滤当前页面的字段
   const currentPageFields = useMemo(() => {
     return fields.filter((field) => {
@@ -67,6 +68,11 @@ export function FormFieldOverlay({
           scale
         );
 
+        const fieldValue = values[field.id];
+        if (field.type === 'checkbox') {
+          console.log('[FormFieldOverlay] Checkbox field:', field.id, 'value from values:', fieldValue);
+        }
+
         return (
           <div
             key={field.id}
@@ -77,7 +83,7 @@ export function FormFieldOverlay({
             <InlineFormInput
               field={field}
               position={position}
-              value={values[field.id] ?? ''}
+              value={fieldValue ?? ''}
               onChange={onValueChange}
               disabled={disabled}
             />

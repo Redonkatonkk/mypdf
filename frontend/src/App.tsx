@@ -35,6 +35,9 @@ function App() {
   const annotationManager = useAnnotations();
   const formFields = useFormFields();
 
+  // Debug: 监控表单值变化
+  console.log('[App] formFields.values:', formFields.values);
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 显示消息
@@ -102,7 +105,9 @@ function App() {
     // 如果在表单模式且有填写值，先提交表单获取填充后的 PDF
     if (isFormMode && Object.keys(formFields.values).length > 0) {
       try {
+        console.log('[getFilledPdfUrl] Submitting form values:', formFields.values);
         const result = await pdfService.fillForm(pdfDoc.fileId, formFields.values);
+        console.log('[getFilledPdfUrl] Fill result:', result);
         return pdfService.getFileUrl(result.fileId);
       } catch (error) {
         console.error('填充表单失败:', error);

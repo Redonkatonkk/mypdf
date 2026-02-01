@@ -443,9 +443,25 @@ class PDFFormFiller:
 
     def _parse_field(self, field_name: str, field_data: Dict) -> FormFieldInfo:
         """解析单个字段信息"""
+        field_type = self._get_field_type(field_data)
+
+        # 调试：打印复选框字段的详细信息
+        if field_type == FieldType.CHECKBOX:
+            print(f"[Parse Checkbox] {field_name}")
+            print(f"  - /AS (Appearance State): {field_data.get('/AS')}")
+            print(f"  - /V (Value): {field_data.get('/V')}")
+            print(f"  - /AP (Appearances): {list(field_data.get('/AP', {}).keys()) if '/AP' in field_data else 'None'}")
+            # 获取可用的外观状态
+            if '/AP' in field_data and '/N' in field_data['/AP']:
+                ap_n = field_data['/AP']['/N']
+                if hasattr(ap_n, 'get_object'):
+                    ap_n = ap_n.get_object()
+                if hasattr(ap_n, 'keys'):
+                    print(f"  - Available states: {list(ap_n.keys())}")
+
         field_info = FormFieldInfo(
             name=field_name,
-            field_type=self._get_field_type(field_data),
+            field_type=field_type,
         )
 
         # 获取当前值
@@ -675,15 +691,18 @@ class PDFFormFiller:
                 # 准备字段值
                 if field_info.field_type == FieldType.CHECKBOX:
                     # 复选框值处理
+                    original_value = value
                     if isinstance(value, bool):
                         value = "/Yes" if value else "/Off"
                     elif value in ("true", "True", "1", "yes", "Yes"):
                         value = "/Yes"
                     elif value in ("false", "False", "0", "no", "No"):
                         value = "/Off"
+                    print(f"[Checkbox] Field: {field_name}, Original: {original_value}, Converted: {value}")
 
                 # 更新字段值
                 field_dict = {field_name: value}
+                print(f"[Fill] Updating field: {field_name} = {value} on page {page_idx}")
                 writer.update_page_form_field_values(
                     writer.pages[page_idx],
                     field_dict,

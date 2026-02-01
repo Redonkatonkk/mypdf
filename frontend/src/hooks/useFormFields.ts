@@ -67,10 +67,15 @@ export function useFormFields(): UseFormFieldsReturn {
 
   // 更新字段值
   const setValue = useCallback((fieldId: string, value: string | boolean) => {
-    setValues((prev) => ({
-      ...prev,
-      [fieldId]: value,
-    }));
+    console.log('[useFormFields] setValue:', fieldId, 'value:', value);
+    setValues((prev) => {
+      const newValues = {
+        ...prev,
+        [fieldId]: value,
+      };
+      console.log('[useFormFields] newValues:', newValues);
+      return newValues;
+    });
   }, []);
 
   // 提交表单
