@@ -78,6 +78,7 @@ export function PageThumbnails({
       await page.render({
         canvasContext: context,
         viewport: scaledViewport,
+        canvas: canvas,
       }).promise;
 
       return canvas.toDataURL();

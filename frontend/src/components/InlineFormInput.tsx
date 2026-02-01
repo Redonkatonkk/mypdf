@@ -29,13 +29,6 @@ export function InlineFormInput({
     [field.id, onChange]
   );
 
-  const handleCheckboxChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      onChange(field.id, e.target.checked);
-    },
-    [field.id, onChange]
-  );
-
   // 根据高度计算字体大小（自适应）
   const fontSize = Math.max(Math.min(position.height * 0.7, 16), 10);
 
