@@ -14,11 +14,11 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS配置
+# CORS配置 - 允许所有来源（nginx 反向代理处理请求）
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:7777"],  # 前端服务器
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,  # 使用 * 时不能启用 credentials
     allow_methods=["*"],
     allow_headers=["*"],
 )

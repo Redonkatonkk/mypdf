@@ -37,8 +37,8 @@ COPY backend/ ./backend/
 # Copy built frontend from builder stage
 COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
 
-# Create uploads directory
-RUN mkdir -p /app/backend/uploads
+# Create uploads directory with proper permissions
+RUN mkdir -p /app/backend/uploads && chmod 777 /app/backend/uploads
 
 # Configure nginx
 RUN rm /etc/nginx/sites-enabled/default
@@ -46,6 +46,9 @@ COPY <<EOF /etc/nginx/sites-enabled/default
 server {
     listen 7777;
     server_name localhost;
+
+    # 允许上传大文件 (最大 100MB)
+    client_max_body_size 100M;
 
     # Frontend static files
     location / {
@@ -61,6 +64,11 @@ server {
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
+
+        # 上传超时设置
+        proxy_connect_timeout 300;
+        proxy_send_timeout 300;
+        proxy_read_timeout 300;
     }
 
     # Uploads static files
