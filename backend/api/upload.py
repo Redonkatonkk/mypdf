@@ -98,7 +98,7 @@ async def get_file(file_id: str):
     return FileResponse(
         pdf_path,
         media_type="application/pdf",
-        filename=f"{file_id}.pdf"
+        headers={"Content-Disposition": "inline"}
     )
 
 
