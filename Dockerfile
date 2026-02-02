@@ -50,9 +50,12 @@ server {
     listen 7777;
     server_name localhost;
 
-    # 支持 ES 模块 (.mjs 文件)
+    # 包含默认 MIME 类型
+    include /etc/nginx/mime.types;
+
+    # 添加 ES 模块 (.mjs 文件) 支持
     types {
-        application/javascript mjs js;
+        application/javascript mjs;
     }
 
     # 允许上传大文件 (最大 100MB)
