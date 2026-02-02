@@ -43,8 +43,8 @@ COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
 # Create uploads directory with proper permissions
 RUN mkdir -p /app/backend/uploads && chmod 777 /app/backend/uploads
 
-# Configure nginx - 添加 .mjs MIME 类型支持
-RUN echo 'application/javascript mjs;' >> /etc/nginx/mime.types
+# Configure nginx - 添加 .mjs MIME 类型支持 (在 types 块内插入)
+RUN sed -i '/^}/i\    application/javascript mjs;' /etc/nginx/mime.types
 
 RUN rm /etc/nginx/sites-enabled/default
 COPY <<EOF /etc/nginx/sites-enabled/default
