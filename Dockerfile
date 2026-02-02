@@ -50,6 +50,11 @@ server {
     listen 7777;
     server_name localhost;
 
+    # 支持 ES 模块 (.mjs 文件)
+    types {
+        application/javascript mjs js;
+    }
+
     # 允许上传大文件 (最大 100MB)
     client_max_body_size 100M;
 

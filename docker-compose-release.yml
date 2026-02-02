@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  mypdf:
+    image: redonkatonk/mypdf:latest
+    container_name: mypdf
+    ports:
+      - "7777:7777" # Web 访问端口
+      - "7778:7778" # API 服务端口
+    volumes:
+      - uploads_data:/app/backend/uploads
+    environment:
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:7778/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  uploads_data:
+    driver: local
