@@ -43,20 +43,14 @@ COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
 # Create uploads directory with proper permissions
 RUN mkdir -p /app/backend/uploads && chmod 777 /app/backend/uploads
 
-# Configure nginx
+# Configure nginx - 添加 .mjs MIME 类型支持
+RUN echo 'application/javascript mjs;' >> /etc/nginx/mime.types
+
 RUN rm /etc/nginx/sites-enabled/default
 COPY <<EOF /etc/nginx/sites-enabled/default
 server {
     listen 7777;
     server_name localhost;
-
-    # 包含默认 MIME 类型
-    include /etc/nginx/mime.types;
-
-    # 添加 ES 模块 (.mjs 文件) 支持
-    types {
-        application/javascript mjs;
-    }
 
     # 允许上传大文件 (最大 100MB)
     client_max_body_size 100M;
