@@ -8,7 +8,8 @@ services:
       - "7777:7777" # Web 访问端口
       - "7778:7778" # API 服务端口
     volumes:
-      - uploads_data:/app/backend/uploads
+      # 使用 bind mount 确保目录自动创建
+      - ./uploads:/app/backend/uploads
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped
@@ -18,7 +19,3 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-
-volumes:
-  uploads_data:
-    driver: local
