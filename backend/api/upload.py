@@ -102,7 +102,7 @@ async def get_file(file_id: str):
 
     return FileResponse(
         pdf_path,
-        media_type="application/pdf",
+        media_type="application/octet-stream",  # 使用 octet-stream 避免 IDM 拦截
         headers={"Content-Disposition": "inline"}
     )
 
