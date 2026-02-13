@@ -22,6 +22,14 @@ export const pdfService = {
   },
 
   /**
+   * 获取PDF的Blob URL（绕过IDM拦截）
+   */
+  async getBlobUrl(fileId: string): Promise<string> {
+    const blob = await api.getBlob(`/file/${fileId}`);
+    return URL.createObjectURL(blob);
+  },
+
+  /**
    * 获取表单字段
    */
   async getFormFields(fileId: string): Promise<FormFieldsResponse> {

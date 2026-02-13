@@ -57,6 +57,18 @@ class ApiClient {
     }
   }
 
+  async getBlob(endpoint: string): Promise<Blob> {
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('获取文件失败');
+    }
+    return response.blob();
+  }
+
   getFileUrl(fileId: string): string {
     return `${this.baseUrl}/file/${fileId}`;
   }

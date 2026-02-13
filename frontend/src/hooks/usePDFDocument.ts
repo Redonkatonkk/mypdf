@@ -25,11 +25,13 @@ export function usePDFDocument() {
 
     try {
       const response = await pdfService.upload(file);
+      // 使用 Blob URL 绕过 IDM 拦截
+      const blobUrl = await pdfService.getBlobUrl(response.fileId);
       setState(prev => ({
         ...prev,
         fileId: response.fileId,
         fileName: response.fileName,
-        pdfUrl: pdfService.getFileUrl(response.fileId),
+        pdfUrl: blobUrl,
         isLoading: false,
         currentPage: 1,
       }));
@@ -96,8 +98,12 @@ export function usePDFDocument() {
 
   // 重置
   const reset = useCallback(() => {
+    // 清理 Blob URL 防止内存泄漏
+    if (state.pdfUrl && state.pdfUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(state.pdfUrl);
+    }
     setState(initialState);
-  }, []);
+  }, [state.pdfUrl]);
 
   // 清除错误
   const clearError = useCallback(() => {
