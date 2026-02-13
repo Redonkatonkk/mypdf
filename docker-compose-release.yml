@@ -3,6 +3,7 @@ version: '3.8'
 services:
   mypdf:
     image: redonkatonk/mypdf:latest
+    user: "0:0"  # 以 root 用户运行，确保有读写权限
     container_name: mypdf
     ports:
       - "7777:7777" # Web 访问端口

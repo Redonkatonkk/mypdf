@@ -92,6 +92,11 @@ async def get_file(file_id: str):
     """获取PDF文件"""
     pdf_path = get_pdf_path(UPLOAD_DIR, file_id)
 
+    print(f"[DEBUG] Requested file_id: {file_id}")
+    print(f"[DEBUG] PDF path: {pdf_path}")
+    print(f"[DEBUG] File exists: {os.path.exists(pdf_path)}")
+    print(f"[DEBUG] UPLOAD_DIR: {UPLOAD_DIR}")
+
     if not os.path.exists(pdf_path):
         raise HTTPException(status_code=404, detail="文件不存在")
 
