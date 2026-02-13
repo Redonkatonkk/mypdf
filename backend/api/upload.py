@@ -1,6 +1,7 @@
 """文件上传API"""
 import os
 import shutil
+import base64
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -27,6 +28,7 @@ class UploadResponse(BaseModel):
     fileName: str
     fileType: str
     pdfUrl: str
+    pdfData: str  # Base64 编码的 PDF 数据，用于绕过 IDM 拦截
     message: str
 
 
@@ -78,11 +80,16 @@ async def upload_file(file: UploadFile = File(...)):
         os.remove(upload_path)
         raise HTTPException(status_code=400, detail="不支持的文件格式")
 
+    # 读取 PDF 文件并编码为 base64（绕过 IDM 拦截）
+    with open(pdf_path, "rb") as f:
+        pdf_data = base64.b64encode(f.read()).decode("utf-8")
+
     return UploadResponse(
         fileId=file_id,
         fileName=file.filename,
         fileType=extension[1:],  # 去掉点号
         pdfUrl=f"/api/file/{file_id}",
+        pdfData=pdf_data,
         message=message
     )
 

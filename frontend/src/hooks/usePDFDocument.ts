@@ -5,6 +5,19 @@ import { useState, useCallback } from 'react';
 import { pdfService } from '../services/pdfService';
 import type { PDFDocumentState } from '../types';
 
+/**
+ * 将 base64 编码的 PDF 数据转换为 Blob URL
+ */
+function base64ToBlobUrl(base64Data: string): string {
+  const binaryString = atob(base64Data);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  const blob = new Blob([bytes], { type: 'application/pdf' });
+  return URL.createObjectURL(blob);
+}
+
 const initialState: PDFDocumentState = {
   fileId: null,
   fileName: null,
@@ -25,8 +38,8 @@ export function usePDFDocument() {
 
     try {
       const response = await pdfService.upload(file);
-      // 使用 Blob URL 绕过 IDM 拦截
-      const blobUrl = await pdfService.getBlobUrl(response.fileId);
+      // 直接使用上传响应中的 base64 数据创建 Blob URL（完全绕过 IDM 拦截）
+      const blobUrl = base64ToBlobUrl(response.pdfData);
       setState(prev => ({
         ...prev,
         fileId: response.fileId,

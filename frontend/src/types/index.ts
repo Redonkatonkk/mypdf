@@ -44,6 +44,7 @@ export interface UploadResponse {
   fileName: string;
   fileType: string;
   pdfUrl: string;
+  pdfData: string;  // Base64 编码的 PDF 数据
   message: string;
 }
 
