@@ -58,7 +58,10 @@ class ApiClient {
   }
 
   async getBlob(endpoint: string): Promise<Blob> {
+    // 使用 POST 请求绕过 IDM 等下载管理器的拦截
+    // IDM 通常只拦截 GET 请求
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      method: 'POST',
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
       },

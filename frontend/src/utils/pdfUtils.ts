@@ -62,7 +62,11 @@ export async function mergeAnnotationsToPdf(
   annotations: Annotation[]
 ): Promise<Uint8Array> {
   // 获取PDF文件
-  const response = await fetch(pdfUrl);
+  // 如果是 blob URL，直接 GET；否则使用 POST 绕过 IDM 拦截
+  const fetchOptions: RequestInit = pdfUrl.startsWith('blob:')
+    ? {}
+    : { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } };
+  const response = await fetch(pdfUrl, fetchOptions);
   const pdfBytes = await response.arrayBuffer();
 
   // 加载PDF文档

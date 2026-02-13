@@ -107,6 +107,24 @@ async def get_file(file_id: str):
     )
 
 
+@router.post("/file/{file_id}")
+async def get_file_post(file_id: str):
+    """
+    通过POST请求获取PDF文件
+    使用POST方法绕过IDM等下载管理器的拦截（它们通常只拦截GET请求）
+    """
+    pdf_path = get_pdf_path(UPLOAD_DIR, file_id)
+
+    if not os.path.exists(pdf_path):
+        raise HTTPException(status_code=404, detail="文件不存在")
+
+    return FileResponse(
+        pdf_path,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": "inline"}
+    )
+
+
 @router.delete("/file/{file_id}")
 async def delete_file(file_id: str):
     """删除文件"""

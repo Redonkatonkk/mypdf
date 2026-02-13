@@ -108,7 +108,8 @@ function App() {
         console.log('[getFilledPdfUrl] Submitting form values:', formFields.values);
         const result = await pdfService.fillForm(pdfDoc.fileId, formFields.values);
         console.log('[getFilledPdfUrl] Fill result:', result);
-        return pdfService.getFileUrl(result.fileId);
+        // 使用 Blob URL 绕过 IDM 拦截
+        return await pdfService.getBlobUrl(result.fileId);
       } catch (error) {
         console.error('填充表单失败:', error);
         // 失败时使用原始 PDF
